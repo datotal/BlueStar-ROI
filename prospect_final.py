@@ -165,18 +165,18 @@ shipper_zips_of_interest = ["41048", "53142", "N8W0A7", "90630", "54942"]  # war
 warehouse = df[df[shipper_zip].isin(shipper_zips_of_interest)]
 print("warecount",warehouse.shape[0])
 # Group by shipper_state with both sum and count
-warehouse_list = warehouse.groupby(shipper_zip).agg(
+warehouse_list = warehouse.groupby(shipper_state).agg(
     total_spend=(charge, 'sum'),
     shipment_count=(charge, 'count')
 ).reset_index().sort_values(by='total_spend', ascending=False)
 
 print(warehouse_list)
-warehouse_list[shipper_zip] = warehouse_list[shipper_zip].astype(str)
+# warehouse_list[shipper_zip] = warehouse_list[shipper_zip].astype(str)
 # Create bar chart with total spend and display count on hover
 fig = px.bar(
     warehouse_list,
     x='total_spend',
-    y=shipper_zip,
+    y=shipper_state,
     hover_data={'total_spend': ':.2f', 'shipment_count': True},
     title='Warehouse'
 )
