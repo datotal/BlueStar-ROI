@@ -161,22 +161,22 @@ fig.update_yaxes(title_text="Carrier")
 st.plotly_chart(fig)
 
 #predicted warehouses
-shipper_zips_of_interest = ["41408", "53142", "N8W0A7", "90630", "54942"]  # warehouse location
+shipper_zips_of_interest = ["41048", "53142", "N8W0A7", "90630", "54942"]  # warehouse location
 warehouse = df[df[shipper_zip].isin(shipper_zips_of_interest)]
-
+print("warecount",warehouse.shape[0])
 # Group by shipper_state with both sum and count
-warehouse_list = warehouse.groupby(shipper_state).agg(
+warehouse_list = warehouse.groupby(shipper_zip).agg(
     total_spend=(charge, 'sum'),
     shipment_count=(charge, 'count')
 ).reset_index().sort_values(by='total_spend', ascending=False)
 
 print(warehouse_list)
-
+warehouse_list[shipper_zip] = warehouse_list[shipper_zip].astype(str)
 # Create bar chart with total spend and display count on hover
 fig = px.bar(
     warehouse_list,
     x='total_spend',
-    y=shipper_state,
+    y=shipper_zip,
     hover_data={'total_spend': ':.2f', 'shipment_count': True},
     title='Warehouse'
 )
@@ -555,8 +555,9 @@ PARCEL=df[df['Mode']=='PARCEL']
 PARCEL_to_LTL=PARCEL[PARCEL[weight]>150]
 
 file_path = "output_data_parcel_to_ltl.xlsx"
-
+print('before cpp',PARCEL_to_LTL.shape[0])
 PARCEL_to_LTL['mean_cpp'] = costPerPound(PARCEL_to_LTL, 'LTL',file_path)
+print('after cpp',PARCEL_to_LTL['mean_cpp'].shape[0])
 
 PARCEL_to_LTL=PARCEL_to_LTL[PARCEL_to_LTL['mean_cpp']!=0]
 PARCEL_to_LTL['Estimated Freight$']=PARCEL_to_LTL['mean_cpp'] * PARCEL_to_LTL[weight]
@@ -742,7 +743,7 @@ if (shipment_consolidated_PARCEL.shape[0])>1 :
     st.subheader("In PARCEL Out Of "+str(f'{consolidation_by_mode_PARCEL.shape[0]:,}')
                 +" Shipments, "+str(f'{shipment_consolidated_PARCEL1.shape[0]:,}')+" Can Be Consolidated")
 
-    
+    shipment_consolidated_PARCEL1[charge] = shipment_consolidated_PARCEL1[charge].round(2)
     shipment_consolidated_PARCEL1[charge] = shipment_consolidated_PARCEL1[charge].astype(str)
     shipment_consolidated_PARCEL1[charge]='$ '+shipment_consolidated_PARCEL1[charge]
     st.write(shipment_consolidated_PARCEL1[[shipper_city,shipdate,'Consolidated_data',weight,charge,count]].reset_index(drop=True))
@@ -775,6 +776,7 @@ if (shipment_consolidated_PARCEL.shape[0])>1 :
         #formatting
         st.subheader("By Consolidating "+str(f'{shipment_consolidated_PARCEL1.shape[0]:,}')+" Shipments,"+str(shipment_consolidated_PARCEL_LTL.shape[0])+" Shipments Can Go via LTL Service")
         
+        shipment_consolidated_PARCEL_LTL[charge] = shipment_consolidated_PARCEL_LTL[charge].round(2)
         shipment_consolidated_PARCEL_LTL[charge] = '$ ' + shipment_consolidated_PARCEL_LTL[charge].astype(str)
         shipment_consolidated_PARCEL_LTL['Estimated Freight$'] = '$ ' + shipment_consolidated_PARCEL_LTL['Estimated Freight$'].astype(str)
         shipment_consolidated_PARCEL_LTL['Savings'] = '$ ' + shipment_consolidated_PARCEL_LTL['Savings'].astype(str)
@@ -794,7 +796,7 @@ elif (shipment_consolidated_PARCEL1.shape[0])>1 :
     st.subheader("In PARCEL Out Of "+str(f'{consolidation_by_mode_PARCEL.shape[0]:,}')
                 +" Shipments, "+str(f'{shipment_consolidated_PARCEL1.shape[0]:,}')+" Can Be Consolidated")
 
-    
+    shipment_consolidated_PARCEL1[charge] = shipment_consolidated_PARCEL1[charge].round(2)
     shipment_consolidated_PARCEL1[charge] = shipment_consolidated_PARCEL1[charge].astype(str)
     shipment_consolidated_PARCEL1[charge]='$ '+shipment_consolidated_PARCEL1[charge]
     st.write(shipment_consolidated_PARCEL1[[shipper_city,shipdate,'Consolidated_data',weight,charge,count]].head(10).reset_index(drop=True))
@@ -808,6 +810,7 @@ elif (shipment_consolidated_PARCEL1.shape[0])>1 :
         #formatting
         st.subheader("By Consolidating PARCEL Shipments,"+str(shipment_consolidated_PARCEL_LTL.shape[0])+" Shipments Can Go via LTL Service")
         
+        shipment_consolidated_PARCEL_LTL[charge] = shipment_consolidated_PARCEL_LTL[charge].round(2)
         shipment_consolidated_PARCEL_LTL[charge] = '$ ' + shipment_consolidated_PARCEL_LTL[charge].astype(str)
         st.subheader("Total Spend $"+str(f'{consolidation_charge:,}'))
         st.write(shipment_consolidated_PARCEL_LTL[[shipper_city,shipdate,'Consolidated_data',weight,charge,count]].head(10).reset_index(drop=True))
@@ -846,7 +849,7 @@ def LTL_TL_cons(consbyLTL,a,var):
         #     [shipper_zip, consignee_zip]  # Group by relevant columns
         # )['Dry / Reefer'].transform(determine_dry_reefer)
 
-
+        shipment_consolidated_LTL1[charge] = shipment_consolidated_LTL1[charge].round(2)
         shipment_consolidated_LTL1[charge]=shipment_consolidated_LTL1[charge].astype(str)
         shipment_consolidated_LTL1[charge]='$ '+shipment_consolidated_LTL1[charge].astype(str)
 
@@ -880,6 +883,7 @@ def LTL_TL_cons(consbyLTL,a,var):
             #formatting
             st.subheader("By Consolidating  "+str(shipment_consolidated_LTL1.shape[0])+" Shipments,"+str(shipment_consolidated_LTL_TL.shape[0])+" Shipments Can Go via TL Service")
             
+            shipment_consolidated_LTL_TL[charge] = shipment_consolidated_LTL_TL[charge].round(2)
             shipment_consolidated_LTL_TL[charge] = '$ ' + shipment_consolidated_LTL_TL[charge].astype(str)
             shipment_consolidated_LTL_TL['Estimated Freight$'] = '$ ' + shipment_consolidated_LTL_TL['Estimated Freight$'].astype(str)
             shipment_consolidated_LTL_TL['Savings'] = '$ ' + shipment_consolidated_LTL_TL['Savings'].astype(str)
@@ -1020,7 +1024,8 @@ considering_outbound = df.copy()
 # print(df[shipper_zip].head())
 # print(df[shipper_zips_of_interest].head())
 # Debug print to check the shape after filtering by weight
-considering_outbound = df[df[shipper_zip].isin(shipper_zips_of_interest)]
+shipper_zips_of_interest1 = ["41408", "53142", "N8W0A7", "90630", "54942"]
+considering_outbound = df[df[shipper_zip].isin(shipper_zips_of_interest1)]
 considering_outbound = considering_outbound[considering_outbound[weight]<10000]
 # print("Shape after filtering by weight:", considering_outbound.shape)
 
